@@ -145,17 +145,17 @@ however you could also create a shared secret for things like letsencrypt-stagin
 where you want to use ACME, but don't want to make is widely structed by browsers.
 */}}
 {{- define "unikorn.ca.secretNamespace" -}}
-{{- if (and .Values.global .Values.global.ca .Values.global.ca .Values.global.ca.secretNamespace) -}}
+{{- if (and .Values.global .Values.global.ca .Values.global.ca.secretNamespace) -}}
 {{- .Values.global.ca.secretNamespace }}
-{{- else if .Values.identity.caSecretNamespace }}
+{{- else if (and .Values.ca .Values.ca.secretNamespace) -}}
 {{- .Values.ca.secretNamespace }}
 {{- end }}
 {{- end }}
 
 {{- define "unikorn.ca.secretName" -}}
-{{- if (and .Values.global .Values.global.ca .Values.global.ca .Values.global.ca.secretName) -}}
+{{- if (and .Values.global .Values.global.ca .Values.global.ca.secretName) -}}
 {{- .Values.global.ca.secretName }}
-{{- else if .Values.ca.secretName }}
+{{- else if (and .Values.ca .Values.ca.secretName) -}}
 {{- .Values.ca.secretName }}
 {{- end }}
 {{- end }}
