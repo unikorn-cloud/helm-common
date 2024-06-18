@@ -85,8 +85,8 @@ Used to configure tracing across all components.
 */}}
 {{- define "unikorn.otlp.flags" -}}
 {{- $otlp := .Values.otlp }}
-{{- if ( and .Values.global .Values.global.otlp .Values.global.otlp.endpoint ) -}}
-{{- $otlp = .Values.global.otlp.endpoint }}
+{{- if ( and .Values.global .Values.global.otlp ) -}}
+{{- $otlp = .Values.global.otlp }}
 {{- end }}
 {{- if $otlp }}
 {{- with $endpoint := $otlp.endpoint }}
