@@ -80,6 +80,35 @@ prometheus.unikorn-cloud.org/job
 {{- end }}
 
 {{/*
+OTLP support.
+Used to configure tracing across all components.
+*/}}
+{{- define "unikorn.otlp.endpoint" -}}
+{{- if ( and .Values.global .Values.global.otlp .Values.global.otlp.endpoint ) -}}
+{{- .Values.global.otlp.endpoint }}
+{{- else if ( and .Values.otlp .Values.otlp.endpoint) -}}
+{{- .Values.otlp.endpoint }}
+{{- end }}
+{{- end }}
+
+{{/*
+CORS support.
+Used to lock down APIs to specific clients.
+*/}}
+{{- define "unikorn.cors" -}}
+{{- $cors := .Values.cors -}}
+{{- if ( and .Values.global .Values.global.cors ) -}}
+{{- $cors = .Values.global.cors -}}
+{{- end }}
+{{- range $origin := $cors.allowOrigin }}
+- --cors-allow-origin={{ $origin }}
+{{- end }}
+{{- if $cors.maxAge }}
+- --cors-max-age={{ $cors.maxAge }}
+{{- end }}
+{{- end }}
+
+{{/*
 Creates predicatable Kubernetes name compatible UUIDs from name.
 Note we always start with a letter (kubernetes DNS label requirement),
 group 3 starts with "4" (UUIDv4 aka "random") and group 4 with "8"
