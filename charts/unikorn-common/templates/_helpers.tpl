@@ -83,11 +83,15 @@ prometheus.unikorn-cloud.org/job
 OTLP support.
 Used to configure tracing across all components.
 */}}
-{{- define "unikorn.otlp.endpoint" -}}
+{{- define "unikorn.otlp.flags" -}}
+{{- $otlp := .Values.otlp }}
 {{- if ( and .Values.global .Values.global.otlp .Values.global.otlp.endpoint ) -}}
-{{- .Values.global.otlp.endpoint }}
-{{- else if ( and .Values.otlp .Values.otlp.endpoint) -}}
-{{- .Values.otlp.endpoint }}
+{{- $otlp = .Values.global.otlp.endpoint }}
+{{- end }}
+{{- if $otlp }}
+{{- with $endpoint := $otlp.endpoint }}
+- --otlp-endpoint={{ $endpoint }}
+{{- end }}
 {{- end }}
 {{- end }}
 
@@ -95,16 +99,18 @@ Used to configure tracing across all components.
 CORS support.
 Used to lock down APIs to specific clients.
 */}}
-{{- define "unikorn.cors" -}}
+{{- define "unikorn.cors.flags" -}}
 {{- $cors := .Values.cors -}}
 {{- if ( and .Values.global .Values.global.cors ) -}}
 {{- $cors = .Values.global.cors -}}
 {{- end }}
+{{- if $cors }}
 {{- range $origin := $cors.allowOrigin }}
 - --cors-allow-origin={{ $origin }}
 {{- end }}
-{{- if $cors.maxAge }}
-- --cors-max-age={{ $cors.maxAge }}
+{{- with $maxAge := $cors.maxAge }}
+- --cors-max-age={{ $maxAge }}
+{{- end }}
 {{- end }}
 {{- end }}
 
