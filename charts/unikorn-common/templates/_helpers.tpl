@@ -1,0 +1,158 @@
+{{/*
+Expand the name of the chart.
+*/}}
+{{- define "unikorn.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "unikorn.fullname" -}}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "unikorn.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Common labels.
+These must be applied to every resource.
+*/}}
+{{- define "unikorn.labels" -}}
+helm.sh/chart: {{ include "unikorn.chart" . }}
+{{ include "unikorn.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector labels.
+*/}}
+{{- define "unikorn.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "unikorn.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
+Container images.
+*/}}
+{{- define "unikorn.defaultRepositoryPath" -}}
+{{- if .Values.repository }}
+{{- printf "%s/%s" .Values.repository .Values.organization }}
+{{- else }}
+{{- .Values.organization }}
+{{- end }}
+{{- end }}
+
+{{/*
+Prometheus support.
+These are used to label services and then as selectors in ServiceMonitors.
+*/}}
+{{- define "unikorn.prometheusServiceSelector" -}}
+prometheus.unikorn-cloud.org/app: {{ include "unikorn.name" . }}
+{{- end }}
+
+{{- define "unikorn.prometheusJobLabel" -}}
+prometheus.unikorn-cloud.org/job
+{{- end }}
+
+{{- define "unikorn.prometheusLabels" -}}
+{{ include "unikorn.prometheusServiceSelector" . }}
+{{ include "unikorn.prometheusJobLabel" . }}: {{ .job }}
+{{- end }}
+
+{{/*
+Creates predicatable Kubernetes name compatible UUIDs from name.
+Note we always start with a letter (kubernetes DNS label requirement),
+group 3 starts with "4" (UUIDv4 aka "random") and group 4 with "8"
+(the variant aka RFC9562).
+*/}}
+{{ define "resource.id" -}}
+{{- $sum := sha256sum . -}}
+{{ printf "f%s-%s-4%s-8%s-%s" (substr 1 8 $sum) (substr 8 12 $sum) (substr 13 16 $sum) (substr 17 20 $sum) (substr 20 32 $sum) }}
+{{- end }}
+
+{{/*
+Unified X.509 issuer.
+This is used by Ingress resources to define the single source of TLS authority.
+*/}}
+{{- define "unikorn.ingress.clusterIssuer" -}}
+{{- if (and .Values.global .Values.global.ingress .Values.global.ingress.clusterIssuer) -}}
+{{- .Values.global.ingress.clusterIssuer }}
+{{- else if .Values.ingress.clusterIssuer }}
+{{- .Values.ingress.clusterIssuer }}
+{{- end }}
+{{- end }}
+
+{{/*
+Unified X.509 authority.
+This is used by services to get access to a self-signed TLS CA.
+Typically you will reference cert-manager/unikorn-ca for the built in certificate
+however you could also create a shared secret for things like letsencrypt-staging
+where you want to use ACME, but don't want to make is widely structed by browsers.
+*/}}
+{{- define "unikorn.ca.secretNamespace" -}}
+{{- if (and .Values.global .Values.global.ca .Values.global.ca .Values.global.ca.secretNamespace) -}}
+{{- .Values.global.ca.secretNamespace }}
+{{- else if .Values.identity.caSecretNamespace }}
+{{- .Values.ca.secretNamespace }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.ca.secretName" -}}
+{{- if (and .Values.global .Values.global.ca .Values.global.ca .Values.global.ca.secretName) -}}
+{{- .Values.global.ca.secretName }}
+{{- else if .Values.ca.secretName }}
+{{- .Values.ca.secretName }}
+{{- end }}
+{{- end }}
+
+{{/*
+Unified service definitions.
+These are typically used by services that rely on other services to function
+and therefore need to get access to the hostname and TLS verification information.
+We can therefore at a global level define these values just once and have them used
+across all charts.  This also unifies the experience across all charts so things
+are predictable, and less likely to break.
+*/}}
+{{- define "unikorn.identity.host" -}}
+{{- if (and .Values.global .Values.global.identity .Values.global.identity.host) -}}
+{{- .Values.global.identity.host }}
+{{- else }}
+{{- .Values.identity.host }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.region.host" -}}
+{{- if (and .Values.global .Values.global.region .Values.global.region.host) -}}
+{{- .Values.global.region.host }}
+{{- else }}
+{{- .Values.region.host }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.kubernetes.host" -}}
+{{- if (and .Values.global .Values.global.kubernetes .Values.global.kubernetes.host) -}}
+{{- .Values.global.kubernetes.host }}
+{{- else }}
+{{- .Values.kubernetes.host }}
+{{- end }}
+{{- end }}
