@@ -191,3 +191,27 @@ are predictable, and less likely to break.
 {{- .Values.kubernetes.host }}
 {{- end }}
 {{- end }}
+
+{{/*
+Unified service flags.
+As all components use the same client libraries, they have the same flags.
+*/}}
+{{- define "unikorn.identity.flags" -}}
+- --identity-host=https://{{ include "unikorn.identity.host" . }}
+{{- with $namespace := ( include "unikorn.ca.secretNamespace" . ) }}
+- --identity-ca-secret-namespace={{ $namespace }}
+{{- end }}
+{{- with $name := ( include "unikorn.ca.secretName" . ) }}
+- --identity-ca-secret-name={{ $name }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.region.flags" -}}
+- --region-host=https://{{ include "unikorn.region.host" . }}
+{{- with $namespace := ( include "unikorn.ca.secretNamespace" . ) }}
+- --region-ca-secret-namespace={{ $namespace }}
+{{- end }}
+{{- with $name := ( include "unikorn.ca.secretName" . ) }}
+- --region-ca-secret-name={{ $name }}
+{{- end }}
+{{- end }}
