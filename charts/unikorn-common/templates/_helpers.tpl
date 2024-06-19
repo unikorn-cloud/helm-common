@@ -84,11 +84,11 @@ OTLP support.
 Used to configure tracing across all components.
 */}}
 {{- define "unikorn.otlp.flags" -}}
-{{- $otlp := .Values.otlp }}
+{{- $otlp := .Values.otlp -}}
 {{- if ( and .Values.global .Values.global.otlp ) -}}
-{{- $otlp = .Values.global.otlp }}
-{{- end }}
-{{- if $otlp }}
+{{- $otlp = .Values.global.otlp -}}
+{{- end -}}
+{{- if $otlp -}}
 {{- with $endpoint := $otlp.endpoint }}
 - --otlp-endpoint={{ $endpoint }}
 {{- end }}
@@ -103,11 +103,11 @@ Used to lock down APIs to specific clients.
 {{- $cors := .Values.cors -}}
 {{- if ( and .Values.global .Values.global.cors ) -}}
 {{- $cors = .Values.global.cors -}}
-{{- end }}
-{{- if $cors }}
+{{- end -}}
+{{- if $cors -}}
 {{- range $origin := $cors.allowOrigin }}
 - --cors-allow-origin={{ $origin }}
-{{- end }}
+{{- end -}}
 {{- with $maxAge := $cors.maxAge }}
 - --cors-max-age={{ $maxAge }}
 {{- end }}
@@ -134,6 +134,21 @@ This is used by Ingress resources to define the single source of TLS authority.
 {{- .Values.global.ingress.clusterIssuer }}
 {{- else if .Values.ingress.clusterIssuer }}
 {{- .Values.ingress.clusterIssuer }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.ingress.clusterIssuer.annotations" -}}
+{{- with $issuer := (include "unikorn.ingress.clusterIssuer" .) -}}
+cert-manager.io/cluster-issuer: {{ $issuer }}
+{{- end }}
+{{- end }}
+
+{{/*
+Unified DDNS.
+*/}}
+{{- define "unikorn.ingress.externalDNS" -}}
+{{- if (and .Values.global .Values.global.ingress .Values.global.ingress.externalDNS) -}}
+{{- .Values.global.ingress.externalDNS }}
 {{- end }}
 {{- end }}
 
