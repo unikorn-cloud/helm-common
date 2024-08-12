@@ -176,6 +176,23 @@ where you want to use ACME, but don't want to make is widely structed by browser
 {{- end }}
 
 {{/*
+Unified X.509 client certificate.
+This is used by services to authenticate against identity in order to grant an
+oauth2 token for use with other services.
+*/}}
+{{- define "unikorn.clientCertificate.secretNamespace" -}}
+{{- if (and .Values.clientCertificate .Values.clientCertificate.secretNamespace) -}}
+{{- .Values.clientCertificate.secretNamespace }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.clientCertificate.secretName" -}}
+{{- if (and .Values.clientCertificate .Values.clientCertificate.secretName) -}}
+{{- .Values.clientCertificate.secretName }}
+{{- end }}
+{{- end }}
+
+{{/*
 Unified service definitions.
 These are typically used by services that rely on other services to function
 and therefore need to get access to the hostname and TLS verification information.
@@ -228,5 +245,14 @@ As all components use the same client libraries, they have the same flags.
 {{- end }}
 {{- with $name := ( include "unikorn.ca.secretName" . ) }}
 - --region-ca-secret-name={{ $name }}
+{{- end }}
+{{- end }}
+
+{{- define "unikorn.clientCertificate.flags" -}}
+{{- with $namespace := ( include "unikorn.clientCertificate.secretNamespace" . ) }}
+- --client-certificate-namespace={{ $namespace }}
+{{- end }}
+{{- with $name := ( include "unikorn.clientCertificate.secretName" . ) }}
+- --client-certificate-name={{ $name }}
 {{- end }}
 {{- end }}
