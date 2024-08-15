@@ -193,6 +193,19 @@ oauth2 token for use with other services.
 {{- end }}
 
 {{/*
+Unified mTLS ingress handling.
+When adding a new provider, you must ensure the verification is optional,
+the UI will not use mTLS for usability, and that the certificate is passed
+in headers to the backend service.
+*/}}
+{{- define "unikorn.ingress.mtls.annotations" -}}
+nginx.ingress.kubernetes.io/auth-tls-verify-client: optional
+nginx.ingress.kubernetes.io/auth-tls-secret: cert-manager/unikorn-client-ca
+nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+{{- end }}
+
+{{/*
 Unified service definitions.
 These are typically used by services that rely on other services to function
 and therefore need to get access to the hostname and TLS verification information.
