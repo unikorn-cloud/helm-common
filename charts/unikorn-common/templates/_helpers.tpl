@@ -237,6 +237,14 @@ are predictable, and less likely to break.
 {{- end }}
 {{- end }}
 
+{{- define "unikorn.baremetal.host" -}}
+{{- if (and .Values.global .Values.global.baremetal .Values.global.baremetal.host) -}}
+{{- .Values.global.baremetal.host }}
+{{- else }}
+{{- .Values.baremetal.host }}
+{{- end }}
+{{- end }}
+
 {{/*
 Unified service flags.
 As all components use the same client libraries, they have the same flags.
