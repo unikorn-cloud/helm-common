@@ -245,6 +245,14 @@ are predictable, and less likely to break.
 {{- end }}
 {{- end }}
 
+{{- define "unikorn.application.host" -}}
+{{- if (and .Values.global .Values.global.application .Values.global.application.host) -}}
+{{- .Values.global.application.host }}
+{{- else }}
+{{- .Values.application.host }}
+{{- end }}
+{{- end }}
+
 {{/*
 Unified service flags.
 As all components use the same client libraries, they have the same flags.
