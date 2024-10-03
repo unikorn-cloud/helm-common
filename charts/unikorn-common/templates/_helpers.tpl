@@ -237,11 +237,11 @@ are predictable, and less likely to break.
 {{- end }}
 {{- end }}
 
-{{- define "unikorn.baremetal.host" -}}
-{{- if (and .Values.global .Values.global.baremetal .Values.global.baremetal.host) -}}
-{{- .Values.global.baremetal.host }}
+{{- define "unikorn.compute.host" -}}
+{{- if (and .Values.global .Values.global.compute .Values.global.compute.host) -}}
+{{- .Values.global.compute.host }}
 {{- else }}
-{{- .Values.baremetal.host }}
+{{- .Values.compute.host }}
 {{- end }}
 {{- end }}
 
