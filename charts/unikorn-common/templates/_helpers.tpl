@@ -257,6 +257,10 @@ are predictable, and less likely to break.
 Unified service flags.
 As all components use the same client libraries, they have the same flags.
 */}}
+{{- define "unikorn.core.flags" -}}
+- --namespace {{ .Release.Namespace }}
+{{- end }}
+
 {{- define "unikorn.identity.flags" -}}
 - --identity-host=https://{{ include "unikorn.identity.host" . }}
 {{- with $namespace := ( include "unikorn.ca.secretNamespace" . ) }}
