@@ -197,10 +197,12 @@ Unified mTLS ingress handling.
 When adding a new provider, you must ensure the verification is optional,
 the UI will not use mTLS for usability, and that the certificate is passed
 in headers to the backend service.
+Please note that all client CAs need to be sourced from the ingress' namespace
+as the controller will reject you being able to access any secret in the system!
 */}}
 {{- define "unikorn.ingress.mtls.annotations" -}}
 nginx.ingress.kubernetes.io/auth-tls-verify-client: optional
-nginx.ingress.kubernetes.io/auth-tls-secret: cert-manager/unikorn-client-ca
+nginx.ingress.kubernetes.io/auth-tls-secret: {{ .Release.Namespace }}/{{ .Release.Namespace }}-client-certificate
 nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
 nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
 {{- end }}
