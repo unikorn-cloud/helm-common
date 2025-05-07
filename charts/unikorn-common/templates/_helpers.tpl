@@ -52,6 +52,19 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Container image pull secrets.
+This can be specified at the global level for every deployment, or overidden
+on a per deployment basis.
+*/}}
+{{- define "unikorn.imagePullSecrets" -}}
+{{- if .Values.imagePullSecret -}}
+- name: {{ .Values.imagePullSecret -}}
+{{- else if ( and .Values.global .Values.global.imagePullSecret ) -}}
+- name: {{ .Values.global.imagePullSecret }}
+{{- end }}
+{{- end }}
+
+{{/*
 Container images.
 */}}
 {{- define "unikorn.defaultRepositoryPath" -}}
@@ -194,17 +207,26 @@ oauth2 token for use with other services.
 
 {{/*
 Unified mTLS ingress handling.
-When adding a new provider, you must ensure the verification is optional,
-the UI will not use mTLS for usability, and that the certificate is passed
-in headers to the backend service.
+APIs may accept client certificates to prove ownership of a bound access token,
+thus the ingress client verification is optional.
 Please note that all client CAs need to be sourced from the ingress' namespace
 as the controller will reject you being able to access any secret in the system!
+The CA comes for free with a cert-manager client certificate.
 */}}
+{{- define "unikorn.mtls.certificate-name" -}}
+{{ .Release.Name }}-client-certificate
+{{- end }}
+
 {{- define "unikorn.ingress.mtls.annotations" -}}
 nginx.ingress.kubernetes.io/auth-tls-verify-client: optional
-nginx.ingress.kubernetes.io/auth-tls-secret: {{ .Release.Namespace }}/{{ .Release.Namespace }}-client-certificate
+nginx.ingress.kubernetes.io/auth-tls-secret: {{ .Release.Namespace }}/{{ include "unikorn.mtls.certificate-name" . }}
 nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
 nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+{{- end }}
+
+{{- define "unikorn.mtls.flags" -}}
+- --client-certificate-namespace={{ .Release.Namespace }}
+- --client-certificate-name={{ include "unikorn.mtls.certificate-name" . }}
 {{- end }}
 
 {{/*
